@@ -1,0 +1,46 @@
+- hosts: httpd
+  tasks:
+  # apache web server
+  - name: "install httpd package"
+    package:
+       name: "httpd"
+       state: present
+  - name: "install php package"
+    package:
+       name: "php"
+       state: present
+  - name: "copy web pages to the server"
+    copy:
+       src: "/var/www/html/index.php"
+       dest: /var/www/html/
+    notify: restart httpd
+  - name: "start httpd service"
+    service:
+       name: "httpd"
+       state: "started"
+  handlers:
+  - name: "restart httpd"
+    service:
+       name: "httpd"
+       state: "restarted"
+  # loadbalancer
+- hosts: lb
+  tasks:
+  - name: "installing HAProxy"
+    package:
+        name: "haproxy"
+        state: present
+  - name: "copy haproxy configuration file"
+    template:
+        src: "haproxy.cfg"
+        dest: "/etc/haproxy/"
+    notify: lb restart
+  - name: "start HAproxy service"
+    service:
+        name: "haproxy"
+        state: started
+  handlers:
+  - name: "lb restart"
+    service:
+        name: "haproxy"
+        state: restarted
